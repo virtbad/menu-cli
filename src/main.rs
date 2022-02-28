@@ -1,13 +1,15 @@
 mod api;
 mod config;
+mod printer;
 
-use std::io::{Read};
-use clap::{Command, Parser, Subcommand};
+use std::ops::Add;
+use clap::{Parser, Subcommand};
 use crate::api::{Menu, MenuAPI};
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use chrono::{Duration, NaiveDate, Utc};
 use anyhow::{Context, Result};
-use serde::de::IntoDeserializer;
+use crate::Commands::{Date, Next, Search, Today, Tomorrow, Upcoming};
 use crate::config::ConfigHandler;
+use crate::printer::MenuPrinter;
 
 
 /// A CLI to quickly check what is served in your local Mensa.
@@ -63,8 +65,39 @@ fn main() -> Result<()>{
     // Load arguments
     let args: Arguments = Arguments::parse();
 
-    // Instantiate api
-    let api = MenuAPI::new(args.api.map_or_else(|| config.config.api_remote, |custom| custom));
+    // Instantiate api and printer
+    let api = MenuAPI::new(args.api.map_or_else(|| config.config.api_remote.clone(), |custom| custom));
+    let printer = MenuPrinter::new(&config.config, args.ids, &if config.config.display_links { Some(config.config.website_remote.clone()) } else { None });
+
+    // Fetch menus
+    let menus = match args.what {
+        Today {} => {
+            api.read_todays_menus()
+        },
+        Tomorrow {} => {
+            let mut date = Utc::now().naive_local().date();
+            date = date.add(Duration::days(1));
+            api.read_dated_menus(date)
+        },
+        Next {offset} => {
+            let mut date = Utc::now().naive_local().date();
+            date = date.add(Duration::days(offset as i64));
+            api.read_dated_menus(date)
+        },
+        Date {date} => {
+            api.read_dated_menus(NaiveDate::parse_from_str(&date, "%d.%m.%y").with_context(|| "Please provide a valid date!")?)
+        },
+        Search { query } => {
+            api.read_menus_search(&query)
+        },
+        Upcoming {} => {
+            api.read_upcoming_menus()
+        }
+    }.with_context(|| "Couldn't read menus from api")?;
+
+    // Print menus
+    println!();
+    printer.print_menus(menus);
 
     Ok(())
 }

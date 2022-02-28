@@ -3,12 +3,15 @@ use anyhow::{Context, Result};
 use reqwest::Url;
 use serde::{Serialize, Deserialize};
 use crate::MenuAPI;
+use crate::printer::FormatConfig;
 
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub api_remote: String,
     pub website_remote: String,
+    pub display_links: bool,
+    pub format: FormatConfig
 }
 
 impl std::default::Default for Config {
@@ -16,6 +19,8 @@ impl std::default::Default for Config {
         Self {
             api_remote: "".into(),
             website_remote: "".into(),
+            display_links: false,
+            format: FormatConfig::default()
         }
     }
 }
