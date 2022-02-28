@@ -37,9 +37,13 @@ pub struct MenuAPI {
 }
 
 impl MenuAPI {
-    pub fn new(url: &str) -> Self {
-        MenuAPI {
-            url: String::from(url)
+    pub fn new(mut url: String) -> Self {
+        if !url.ends_with('/') {
+            url.push('/');
+        }
+
+        Self {
+            url
         }
     }
 
