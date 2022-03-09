@@ -16,7 +16,7 @@ pub struct Menu {
     pub label: u8,
     pub prices: Vec<Price>,
     #[serde(rename = "voteBalance")]
-    pub votes: u8,
+    pub votes: i32,
 }
 
 #[derive(Deserialize)]

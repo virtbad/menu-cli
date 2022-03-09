@@ -85,7 +85,7 @@ fn main() -> Result<()>{
             api.read_dated_menus(date)
         },
         Date {date} => {
-            api.read_dated_menus(NaiveDate::parse_from_str(&date, "%d.%m.%y").with_context(|| "Please provide a valid date!")?)
+            api.read_dated_menus(NaiveDate::parse_from_str(&date, "%d.%m.%y").with_context(|| "Please provide a valid date in the format of dd.MM.yy, e.g. 12.01.22!")?)
         },
         Search { query } => {
             api.read_menus_search(&query)

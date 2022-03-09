@@ -22,7 +22,9 @@ pub struct FormatConfig {
     price_separator_ansi: String,
     price_amount_ansi: String,
     price_group_ansi: String,
-    link_ansi: String
+    link_ansi: String,
+    not_found_text: String,
+    not_found_ansi: String
 }
 
 impl std::default::Default for FormatConfig {
@@ -40,7 +42,9 @@ impl std::default::Default for FormatConfig {
             price_separator_ansi: "90".to_string(),
             price_amount_ansi: "0".to_string(),
             price_group_ansi: "0".to_string(),
-            link_ansi: "0".to_string()
+            link_ansi: "0".to_string(),
+            not_found_text: "No menus found!".into(),
+            not_found_ansi: "90".into()
         }
     }
 }
@@ -56,8 +60,14 @@ impl MenuPrinter {
     }
 
     pub fn print_menus(&self, menus: Vec<Menu>) {
-        for menu in menus {
-            self.print_menu(menu);
+
+        if menus.is_empty() {
+            println!("{}\n", format_ansi(&self.config.not_found_text, &self.config.not_found_ansi));
+        }
+        else {
+            for menu in menus {
+                self.print_menu(menu);
+            }
         }
     }
 
